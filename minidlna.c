@@ -558,6 +558,7 @@ init(int argc, char **argv)
 	uid_t uid = 0;
 	gid_t gid = 0;
 	int error;
+	unsigned char mac[6] = {0};
 
 	/* first check if "-f" option is used */
 	for (i=2; i<argc; i++)
@@ -634,6 +635,26 @@ init(int argc, char **argv)
 			break;
 		case UPNPFRIENDLYNAME:
 			strncpyt(friendly_name, ary_options[i].value, FRIENDLYNAME_MAX_LEN);
+			break;
+		case UPNPALLOWEDMAC:
+			memset(mac, 0, sizeof(mac));
+			if(sscanf(ary_options[i].value, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5])<6) {
+				DPRINTF(E_ERROR, L_GENERAL, "Error parsing MAC address! [%s]\n", ary_options[i].value);
+				break;
+			}
+			struct allowed_mac_s *this_mac = calloc(1, sizeof(struct allowed_mac_s));
+			memcpy(this_mac->mac, mac, 6);
+			if( !allowed_macs )
+			{
+				allowed_macs = this_mac;
+			}
+			else
+			{
+				struct allowed_mac_s * all_allowed_macs = allowed_macs;
+				while( all_allowed_macs->next )
+					all_allowed_macs = all_allowed_macs->next;
+				all_allowed_macs->next = this_mac;
+			}
 			break;
 		case UPNPMEDIADIR:
 			types = ALL_MEDIA;
@@ -957,6 +978,7 @@ init(int argc, char **argv)
 			printf("Version " MINIDLNA_VERSION "\n");
 			exit(0);
 			break;
+
 		default:
 			DPRINTF(E_ERROR, L_GENERAL, "Unknown option: %s\n", argv[i]);
 			runtime_vars.port = -1; // triggers help display

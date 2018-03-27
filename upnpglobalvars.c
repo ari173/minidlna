@@ -84,6 +84,7 @@ char friendly_name[FRIENDLYNAME_MAX_LEN];
 char db_path[1024] = {'\0'};
 char log_path[1024] = {'\0'};
 struct media_dir_s * media_dirs = NULL;
+struct allowed_mac_s *allowed_macs = NULL;
 struct album_art_name_s * album_art_names = NULL;
 volatile short int quitting = 0;
 volatile uint32_t updateID = 0;
